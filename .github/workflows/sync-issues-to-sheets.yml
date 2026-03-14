@@ -1,0 +1,23 @@
+name: Sync Issues to Google Sheets
+
+on:
+  issues:
+    types: [opened, edited, closed, reopened, deleted]
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send issue data to Google Sheets
+        run: |
+          curl -s -X POST "${{ secrets.GOOGLE_SHEET_WEBHOOK_URL }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "issue_number": ${{ github.event.issue.number }},
+              "title": ${{ toJson(github.event.issue.title) }},
+              "status": ${{ toJson(github.event.issue.state) }},
+              "created_at": ${{ toJson(github.event.issue.created_at) }},
+              "updated_at": ${{ toJson(github.event.issue.updated_at) }},
+              "event": ${{ toJson(github.event.action) }}
+            }'
